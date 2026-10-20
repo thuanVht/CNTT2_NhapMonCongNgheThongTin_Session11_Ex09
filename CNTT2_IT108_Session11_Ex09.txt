@@ -1,0 +1,49 @@
+Bài 9: Tự Động Tra Cứu Phòng Và Thù Lao Báo Cáo Viên Bằng VLOOKUP
+## PHẦN 1: PHÂN TÍCH BÀI TOÁN (I/O)
+### 1. Bảng xác định thành phần hàm VLOOKUP
+| Cột cần điền | Lookup_value (Giá trị tìm kiếm) | Table_array (Bảng tra cứu) | Col_index_num (Thứ tự cột lấy dữ liệu) |
+| --- | --- | --- | --- |
+| **D (Tên Tác Giả)**<br> | `C2` (Mã TG)
+ | `DanhMucTacGia!$A:$E`<br> | **2**<br> |
+| **E (Phòng trình bày)**<br> | `C2` (Mã TG)
+ | `DanhMucTacGia!$A:$E`<br> | **4**<br> |
+| **F (Thù lao)**<br> | `C2` (Mã TG)
+ | `DanhMucTacGia!$A:$E`<br> | **5**<br> |
+
+### 2. Đề xuất giải pháp xử lý 3 bẫy dữ liệu
+* **Cú pháp lồng hàm chung:** `=IFERROR(VLOOKUP(TRIM(cột_Mã_TG), vùng_bảng_có_dấu_$, cột_lấy_dữ_liệu, 0), "Chưa cập nhật")`
+* **Chiến lược xử lý:**
+1. **Bẫy 1 (Khoảng trắng thừa):** Dùng hàm `TRIM(C2)` bọc ngoài ô mã để xóa sạch khoảng trắng dư thừa trước khi đem đi tra cứu.
+2. **Bẫy 2 (Tác giả mới / Lỗi `#N/A`):** Dùng hàm `IFERROR(..., "Chưa cập nhật")` bọc ngoài cùng để nếu không tìm thấy mã sẽ hiện chữ "Chưa cập nhật".
+3. **Bẫy 3 (Bảng tra bị trôi):** Dùng dấu `$` để cố định vùng tra cứu trong sheet `DanhMucTacGia` (ví dụ: `DanhMucTacGia!$A$2:$E$100` hoặc chọn nguyên cột `DanhMucTacGia!$A:$E`).
+
+### 3. Các bước thực hiện trong Excel
+* **Bước 1:** Nhập công thức xử lý đầy đủ vào ô `D2`.
+* **Bước 2:** Copy/Kéo công thức từ `D2` sang ô `E2` và `F2`, sau đó sửa tham số thứ tự cột (`Col_index_num`) lần lượt thành `4` và `5`.
+* **Bước 3:** Bôi đen dòng công thức `D2:F2` và kéo autofill (double-click góc dưới bên phải) xuống hết dòng 81.
+
+## PHẦN 2: TRIỂN KHAI & CHỐNG LỖI
+### 4. Công thức hoàn chỉnh cho ô D2 (Tên Tác Giả)
+
+=IFERROR(VLOOKUP(TRIM(C2), DanhMucTacGia!$A:$E, 2, FALSE), "Chưa cập nhật")
+
+*(Nếu cố định theo vùng dòng cụ thể có thể viết: `=IFERROR(VLOOKUP(TRIM(C2), DanhMucTacGia!$A$2:$E$100, 2, FALSE), "Chưa cập nhật")`)*
+
+### 5. Công thức cho ô E2 và F2 & Giải thích
+* **Công thức ô E2 (Phòng):**
+
+=IFERROR(VLOOKUP(TRIM(C2), DanhMucTacGia!$A:$E, 4, FALSE), "Chưa cập nhật")
+
+* **Công thức ô F2 (Thù lao):**
+
+=IFERROR(VLOOKUP(TRIM(C2), DanhMucTacGia!$A:$E, 5, FALSE), "Chưa cập nhật")
+
+* **Giải thích:** Cả 3 cột đều dùng chung một đối tượng tìm kiếm (`C2`) và tra trên cùng một bảng dữ liệu gốc `DanhMucTacGia`. Do đó, cấu trúc hàm không đổi, chỉ cần thay đổi **thứ tự cột lấy dữ liệu** (`Col_index_num`: 2 cho Tên, 4 cho Phòng, 5 cho Thù lao).
+
+### 6. Giải thích hiện tượng khi bỏ dấu `$`
+* **Hiện tượng:** Nếu bỏ dấu `$`, vùng tra cứu sẽ chuyển từ địa chỉ tuyệt đối sang địa chỉ tương đối. Khi kéo công thức xuống các dòng dưới, vùng bảng tra cứu sẽ bị tịnh tiến (trôi) xuống theo.
+* **Ví dụ cụ thể:**
+* Tại ô **D2**, bảng tra là: `DanhMucTacGia!A2:E100`.
+* Khi kéo xuống **D3**, bảng tra bị trôi thành: `DanhMucTacGia!A3:E101`.
+* Khi kéo xuống **D5**, bảng tra bị trôi thành: `DanhMucTacGia!A5:E103`.
+* **Hậu quả:** Dữ liệu ở các dòng phía trên (từ dòng 2 đến dòng 4) của sheet `DanhMucTacGia` bị loại ra khỏi vùng tìm kiếm, dẫn đến tìm không thấy và bị lỗi.
